@@ -1,8 +1,8 @@
 # app/controllers/auth_controller.py
 from flask import jsonify
-from app.models.user import User, UserSkill
+from app.models import User, UserSkill
 from app.services.location_service import LocationService
-from app.services.username_service import UsernameService
+from app.services.username_services import UsernameService
 from app.services.security_service import SecurityService
 from app.utils.schema_validator import SchemaValidator
 from app import db
@@ -16,20 +16,20 @@ class AuthController:
         validated_data = SchemaValidator.validate_user(data)
         location_service = LocationService()
         
-        # حاول الحصول على الموقع من Abstract API إذا كان IP متاحًا
+       
         location_data = location_service.get_ip_location(ip_address) if ip_address else None
         
-        # استخدم الإدخال اليدوي كخيار أساسي
+     
         location_data = location_data or location_service.get_manual_location(validated_data['city'])
         if not location_data:
             raise ValueError("Unable to determine location")
         
-        # إنشاء اسم مستخدم إذا لم يُقدم
+     
         username = validated_data.get('username') or UsernameService.generate_unique_username(
             validated_data['email']
         )
         
-        # تشفير كلمة المرور
+
         password_hash = SecurityService.hash_password(validated_data['password'])
         
         user = User(
@@ -46,7 +46,7 @@ class AuthController:
         db.session.add(user)
         db.session.commit()
         
-        # إنشاء توكن
+      
         token = SecurityService.generate_token(user.id)
         
         response = {
