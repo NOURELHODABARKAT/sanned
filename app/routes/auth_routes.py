@@ -1,7 +1,7 @@
 # app/routes/auth_routes.py
 from flask import Blueprint, request, jsonify
 from app.controllers.auth_controller import AuthController
-from app.middlewares.phone_middleware import PhoneMiddleware
+
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -10,7 +10,7 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/api')
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    PhoneMiddleware.validate_phone()
+ 
     data = request.get_json()
     ip_address = request.remote_addr if hasattr(request, 'remote_addr') else None
     response, status = AuthController.sign_up(data, ip_address)

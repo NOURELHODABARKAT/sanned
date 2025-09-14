@@ -3,6 +3,10 @@ import requests
 from tenacity import retry, stop_after_attempt, wait_fixed
 import os
 import logging
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 
