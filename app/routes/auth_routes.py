@@ -28,3 +28,19 @@ def get_user_skills(user_id):
     offset = int(request.args.get('offset', 0))
     response = AuthController.get_user_skills(user_id, limit, offset)
     return jsonify(response)
+
+@auth_bp.route('/login', methods=['POST'])
+def login():
+    try:
+        data = request.get_json()
+        response, status = AuthController.login(data)
+        return jsonify(response), status
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        logging.error(f"Login error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+    @auth_bp.route('/users/<int:user_id>/location', methods=['PUT'])
+    def update_location(user_id):
+      data = request.json
+    return UserController.update_location(user_id, data)

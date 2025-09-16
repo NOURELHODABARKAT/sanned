@@ -28,6 +28,7 @@ def create_app():
     from .routes import main as main_blueprint
     app.register_blueprint(main_blueprint)
     app.register_blueprint(main_blueprint, url_prefix='/auth')
+    app.register_blueprint(main_blueprint, url_perfix='/reques')
     #CROS SEETINGS OPEN FOR NOW ONLY
     CORS(app, resources={r"/*": {"origins": "*"}})
 

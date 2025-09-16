@@ -4,13 +4,22 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 import os
 import logging
 from dotenv import load_dotenv
+from shapely.geometry import Point, Polygon
 
-# Load environment variables from .env file
 load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 
 class LocationService:
+    # Polygon of Gaza (approximate bounding box)
+    GAZA_POLYGON = Polygon([
+        (34.216, 31.220),
+        (34.571, 31.220),
+        (34.571, 31.600),
+        (34.216, 31.600),
+        (34.216, 31.220)
+    ])
+
     def __init__(self):
         self.api_key = os.getenv("ABSTRACT_API_KEY")
         if not self.api_key:
@@ -31,12 +40,18 @@ class LocationService:
             response.raise_for_status()
             data = response.json()
             logging.info(f"Location lookup for IP {ip_address}: {data}")
+
+            lat, lon = data.get('latitude'), data.get('longitude')
+            in_gaza = False
+            if lat and lon:
+                in_gaza = self.is_in_gaza(float(lat), float(lon))
+
             return {
                 'country': data.get('country'),
                 'city': data.get('city'),
-                'latitude': data.get('latitude'),
-                'longitude': data.get('longitude'),
-                'is_in_gaza': str(data.get('city', '')).strip().lower() == 'gaza'
+                'latitude': lat,
+                'longitude': lon,
+                'is_in_gaza': in_gaza
             }
         except requests.RequestException as e:
             logging.error(f"Error fetching location for IP {ip_address}: {e}")
@@ -56,3 +71,9 @@ class LocationService:
         }
         logging.info(f"Manual location lookup for city '{city}': {result}")
         return result
+
+    @staticmethod
+    def is_in_gaza(lat: float, lon: float) -> bool:
+        """Check if given coordinates are inside Gaza polygon."""
+        point = Point(lon, lat)  # shapely expects (x=lon, y=lat)
+        return LocationService.GAZA_POLYGON.contains(point)
